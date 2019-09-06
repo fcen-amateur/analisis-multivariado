@@ -1,0 +1,496 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\begin_modules
+sweave
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 2
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 3cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Práctica 1
+\end_layout
+
+\begin_layout Author
+Gonzalo Barrera Borla
+\end_layout
+
+\begin_layout Date
+03/09/2019
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\x}{\mathrm{x}}
+{\mathrm{x}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\I}{\mathrm{\mathrm{I}}}
+{\mathrm{I}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\E}{\mathbb{E}}
+{\mathbb{E}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\simiid}{\stackrel{iid}{\sim}}
+{\stackrel{iid}{\sim}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\t}{\mathsf{T}}
+{\mathsf{T}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\v}{\mathrm{v}}
+{\mathrm{v}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\w}{\mathrm{w}}
+{\mathrm{w}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\a}{\mathrm{a}}
+{\mathrm{a}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Parte 1
+\end_layout
+
+\begin_layout Subsection*
+Ejercicio 10
+\end_layout
+
+\begin_layout Standard
+Sea 
+\begin_inset Formula $\x\sim N_{p}\left(0,\I_{p}\right)$
+\end_inset
+
+ donde 
+\begin_inset Formula $p=10$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Sea 
+\begin_inset Formula $D$
+\end_inset
+
+ la distancia de 
+\begin_inset Formula $\x$
+\end_inset
+
+ al centro de la distribución, en este caso 0.
+ Calcule 
+\begin_inset Formula $\E$
+\end_inset
+
+
+\begin_inset Formula $\left(D^{2}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Sean 
+\begin_inset Formula $\x_{i}\simiid\x,\:1\leq i\leq n$
+\end_inset
+
+ una muestra aleatoria de 
+\begin_inset Formula $\x$
+\end_inset
+
+ y sea 
+\begin_inset Formula $\x_{0}\sim\x$
+\end_inset
+
+ independiente de 
+\begin_inset Formula $\x_{i}\forall\:1\leq i\leq n$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+¿Qué distribución tiene 
+\begin_inset Formula $\x_{0}^{\t}\x_{i}/\left\Vert \x_{0}\right\Vert $
+\end_inset
+
+?
+\end_layout
+
+\begin_layout Enumerate
+Calcule la distancia al cuadrado esperada entre el centro de los datos y
+ 
+\begin_inset Formula $\x_{0}$
+\end_inset
+
+ dado 
+\begin_inset Formula $\x_{0}$
+\end_inset
+
+, es decir 
+\begin_inset Formula $\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\big|\x_{0}\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Deduzca el valor de 
+\begin_inset Formula $\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\right)$
+\end_inset
+
+ ¿Qué observa?
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection*
+Punto 1
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+D & =\left\Vert \x-\mu\right\Vert =\left\Vert \x-0\right\Vert =\left\Vert \x\right\Vert =\sqrt{\x^{\t}\x}\\
+\Rightarrow\E\left(D^{2}\right) & =\E\left(\x^{\t}\x\right)=\E\left(\sum_{j=1}^{p}x_{j}^{2}\right)\\
+ & =\sum_{j=1}^{p}\E\left(x_{j}^{2}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Por definición, las componentes de 
+\begin_inset Formula $\x$
+\end_inset
+
+ tienen distribución 
+\begin_inset Formula $x_{j}\simiid N_{1}\left(0,1\right)\Rightarrow x_{j}^{2}=y_{j}\simiid\chi_{1}^{2}$
+\end_inset
+
+.
+ Luego, 
+\begin_inset Formula $\sum_{j=1}^{p}y_{j}=D^{2}\sim\chi_{p}^{2}$
+\end_inset
+
+ y 
+\begin_inset Formula $\E\left(D^{2}\right)=p$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection*
+Punto 2(a)
+\end_layout
+
+\begin_layout Standard
+Sean el vector aleatorio 
+\begin_inset Formula $\v=\tfrac{\x_{0}}{\left\Vert \x_{0}\right\Vert }$
+\end_inset
+
+ de norma 1 y la variable aleatoria 
+\begin_inset Formula $\w=\tfrac{\x_{0}^{\t}\x_{i}}{\left\Vert \x_{0}\right\Vert }=\v^{\t}\x_{i}$
+\end_inset
+
+.
+ Luego, la variable aleatoria 
+\begin_inset Formula $\w\big|_{\v=\v_{0}}$
+\end_inset
+
+ se puede escribir como una combinación lineal de VA normales independientes,
+ 
+\begin_inset Formula $\w\big|_{\v=\v_{0}}=\sum_{j=1}^{p}v_{j}\cdot x_{ij}$
+\end_inset
+
+, donde 
+\begin_inset Formula $\v_{0}=\left(v_{1},\dots,v_{p}\right)$
+\end_inset
+
+.
+ Usando el resultado de 
+\begin_inset Formula $1.1.1$
+\end_inset
+
+, tenemos que 
+\begin_inset Formula $\w\big|_{\v=\v_{0}}\sim N\left(\mu_{0},\sigma_{0}^{2}\right)$
+\end_inset
+
+ , con
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\mu_{0} & =\sum_{j=1}^{p}\v_{j}\E\left(x_{ij}\right)=0\\
+\sigma_{0}^{2} & =\sum_{j=1}^{p}\v_{j}^{2}\mathrm{Var}\left(x_{ij}\right)=\sum_{j=1}^{p}\v_{j}^{2}=\left\Vert \v\right\Vert =1
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Resulta entonces que 
+\begin_inset Formula $\w\big|_{\v=\v_{0}}\sim N\left(0,1\right)\:\forall\:\v_{0}$
+\end_inset
+
+, con lo cual 
+\begin_inset Formula $\w$
+\end_inset
+
+ es independiente de 
+\begin_inset Formula $\v$
+\end_inset
+
+, y haciendo un abuso de notación, 
+\begin_inset Formula $\tfrac{\x_{0}^{\t}\x_{i}}{\left\Vert \x_{0}\right\Vert }=\w\sim\w\big|\v\sim N\left(0,1\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Paragraph
+Punto 2(b)
+\end_layout
+
+\begin_layout Standard
+Consideremos el vector de constantes 
+\begin_inset Formula $\mathrm{\a}\in\mathbb{R}^{p}$
+\end_inset
+
+ y usemos la linealidad de la esperanza para operar.
+ Recordemos además que como 
+\begin_inset Formula $\bar{\x}\perp\x_{0}\Rightarrow\E\left(\bar{\x}\big|\x_{0}\right)=\E\left(\bar{\x}\right):$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+g\left(\a\right) & =\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\big|\x_{0}=\mathrm{\a}\right)\\
+ & =\E\left(\left(\bar{\x}-\a\right)^{\t}\left(\bar{\x}-\a\right)\right)\\
+ & =\E\left(\left\Vert \bar{\x}\right\Vert ^{2}-2\bar{\x}^{\t}\a+\left\Vert \a\right\Vert ^{2}\right)\\
+ & =\E\left(\left\Vert \bar{\x}\right\Vert ^{2}\right)-2\E\left(\bar{\x}\right)^{\t}\a+\left\Vert \a\right\Vert ^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Por el mismo resultado 
+\begin_inset Formula $1.1.1$
+\end_inset
+
+, sabemos que 
+\begin_inset Formula $\bar{\x}\sim N_{p}\left(0,n^{-1}\I_{p}\right)$
+\end_inset
+
+, y por ende 
+\begin_inset Formula $\sqrt{n}\bar{\x}\sim N_{p}\left(0,\I_{p}\right)$
+\end_inset
+
+.
+ Luego, 
+\begin_inset Formula $\left\Vert \sqrt{n}\bar{\x}\right\Vert ^{2}=\left|\sqrt{n}\right|^{2}\left\Vert \bar{\x}\right\Vert ^{2}=n\left\Vert \bar{\x}\right\Vert ^{2}\sim\chi_{p}^{2}$
+\end_inset
+
+ y resulta que 
+\begin_inset Formula $\E\left(\left\Vert \bar{\x}\right\Vert ^{2}\right)=\tfrac{p}{n}$
+\end_inset
+
+.
+ Finalmente, 
+\begin_inset Formula $\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\big|\x_{0}\right)=g\left(\x_{0}\right)=\tfrac{p}{n}+\left\Vert \x_{0}\right\Vert ^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Paragraph
+Punto 2(c)
+\end_layout
+
+\begin_layout Standard
+Usando que 
+\begin_inset Formula $\E\left(\E\left(X\big|Y\right)\right)=\E\left(X\right)$
+\end_inset
+
+ y que 
+\begin_inset Formula $\left\Vert \x_{0}\right\Vert ^{2}=D^{2}\sim\chi_{p}^{2}$
+\end_inset
+
+, vemos que
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\right) & =\E\left[\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\big|\x_{0}\right)\right]\\
+ & =\E\left(g\left(\x_{0}\right)\right)\\
+ & =\E\left[\tfrac{p}{n}+\left\Vert \x_{0}\right\Vert ^{2}\right]\\
+ & =\tfrac{p}{n}+\E\left(\left\Vert \x_{0}\right\Vert ^{2}\right)\\
+\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\right) & =\frac{\left(n+1\right)p}{n}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Es decir que 
+\begin_inset Formula $\E\left(\left\Vert \bar{\x}-\x_{0}\right\Vert ^{2}\right)\stackrel{n\rightarrow\infty}{\longrightarrow}\E\left(\left\Vert \x_{0}\right\Vert ^{2}\right)=p$
+\end_inset
+
+.
+ El centro de los datos (
+\emph on
+id est
+\emph default
+, de la muestra), 
+\begin_inset Formula $\bar{\x}$
+\end_inset
+
+, tenderá a coincidir con el centro de la distribución (
+\emph on
+id est
+\emph default
+, de la población), 
+\begin_inset Formula $\mu=0$
+\end_inset
+
+, y la distancia cuadrada de un elemento cualquiera 
+\begin_inset Formula $\x_{0}$
+\end_inset
+
+ a 
+\begin_inset Formula $\bar{\x}$
+\end_inset
+
+ será igual a su norma cuadrada.
+\end_layout
+
+\end_body
+\end_document
