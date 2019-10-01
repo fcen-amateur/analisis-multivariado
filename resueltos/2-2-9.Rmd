@@ -125,7 +125,7 @@ rango_k <- c(1, 2, 4, 10, 25)
 rango_p <- c(2, 4, 10)
 rango_nsamp <- 20
 alfa <- 0.1
-nsims <- 100
+nsims <- 10000
 resumen <- simular(rango_k, rango_p, rango_nsamp, alfa, nsims)
 ```
 
@@ -154,13 +154,16 @@ $$
 
 Es decir, la matrix de covarianza "explota" cuando $k \rightarrow 2$, y todo intervalo de confianza para $\mu$ será tan ancho que aún siendo cierta  nunca rechazamos la hipótesis nula  $H_{0} : \mu=\mu_{0}$.
 
+
 ## B: Bootstrap Paramétrico
+
+Utilizaremos un proceso de bootstrap paramétrico, pero como de la lectura del ejercicio, no es evidente qué familia de distribuciones utilizar para parametrizar las muestras _bootstrapeadas_, agregamos un parámetro `familia` que nos permite usar la misma función tanto para nuestras normales como T multivariadas, siempre y cuando pasemos un parámetro extra $k$ en caso de usar la T.
 
 ```{r}
 bootstrap_test <- function(
-  X, # matriz muestral (n*p), con 1 obs/fila
-  mu0=rep(0, ncol(X)), # mu0: define H_0: mu=mu0. Igual a 0 por defecto
-  familia = "normal", # familia paramétrica a usar. Una de c("n[ormal]", "t")
+  X, # matriz muestral de n*p, con n obs. de una distribución p-dimensional
+  mu0=rep(0, ncol(X)), # define la hipotesis nula H_0: mu=mu0. 0 por defecto
+  familia = "normal", # familia paramétrica: "n"/"normal" o "t"/"student"
   nboot=1000, # Cantidad de muestrar a generar
   ... # Parametros extra. Si familia=="t", debe incluir los `k` GL
   ) {
@@ -176,7 +179,7 @@ bootstrap_test <- function(
     if (familia %in% c("normal", "n")) {
       # uso bootstrap parametrico normal multivariado para generar una muestra
       rmvnorm(nsamp, sigma = S, mean = mu0)
-    } else if (familia == "t") {
+    } else if (familia %in% c("t", "student")) {
       if (!"k" %in% extra_kwargs) { 
         stop("La familia t requiere un parametro `k` con sus GL")}
       # uso t multivariada con k grados de libertad 
@@ -202,7 +205,7 @@ bootstrap_test <- function(
     familia = familia,
     ...,
     S = S,
-    x_ = x_,
+    x_ = apply(X, 2, mean),
     # estadistico original
     T.sq = nsamp * MD,
     # Estimo el p-valor como la tasa de Tboot's mayores al T observado
@@ -210,73 +213,43 @@ bootstrap_test <- function(
 }
 ```
 
+Con esta función, elegimos unos parametros y generamos una "muestra original" $X_0$ de t-multivariadas con media en 0, y luego usamos el test bootstrap paramétrico normal y t, para distintas hipótesis nulas. Los valores de $\mu_0$ se construyen tal que $||\mu_0||=d$:
 
-
-mz_sim_aleatoria <- function(d) {
-  m <- matrix(runif(d^2, -2, 2), ncol=d, nrow = d)
-  return(m%*%t(m))
-}
-mz_sim_aleatoria(3)
-nsims <- 1
-nboot <- 100
+```{r}
+nboot <- 10000
 nsamp <- 30
 k <- 3
-p <- 3
-#Sigmaboot <- diag(p)
-Sigmaboot <- mz_sim_aleatoria(p)
+p <- 10
+mu <- rep(0, p)
+Sigma <- diag(p)
+X0 <- ayudante_muestra_t(nsamp, p, k)
 
-alejar <- function(dim, long) {
-  rep(long/sqrt(dim), dim)
+# Genera un vector de dimension `p` y norma `d`
+alejar <- function(d, p) {
+  rep(d/sqrt(p), p)
 }
+```
 
-list(
-  muestras = list(
-    normal = rmvnorm(nsamp, sigma = Sigma1),
-    student = rmvt(nsamp, sigma = Sigma1, type = "shifted")
-  ),
-  
-muestras <- tibble(
-  p = c(1, 2, 4, 10),
-  identidad = map(p, diag),
-  aleatorio = map(p, mz_sim_aleatoria)) %>%
-  gather("tipo_sigma", "sigma", -p) %>%
-  mutate(
-    normal = map(sigma, ~rmvnorm(nmuestral, sigma = .x)),
-    student = map(sigma, ~rmvt(nmuestral, sigma = .x, df = k, type = "shifted"))) %>%
-  select(-sigma) %>%
-  gather("tipo_muestra", "muestra", -p, -tipo_sigma)
+```{r, cache = T, echo = F}
+tests <- tibble(
+  d = c(0, 0.01, 0.03, 0.1, 0.3, 1, 3),
+  mu0 = map(d, alejar, p = p),
+  normal = map(mu0, ~bootstrap_test(X0, ., familia = "normal", nboot = nboot)),
+  student = map(
+    mu0, ~bootstrap_test(X0, ., familia = "student", nboot = nboot, k = k))) %>%
+  gather("familia", "boot_test", -d, -mu0) %>%
+  mutate(p_valor = map_dbl(boot_test, "p_valor")) %>%
+  select(d, familia, p_valor)
 
-crossing(
-  muestras,
-  alejamiento = c(0.3, 1, 3, 10, 30)) %>%
-  mutate(
-    mu0 = map2(p, alejamiento, alejar),
-    boot_call = map2(muestra, mu0, bootstrap_test, nboot = nboot),
-    p_valor = map_dbl(boot_call, "p_valor"))
+tests %>%
+  ggplot(aes(d, p_valor, color = familia)) +
+  geom_line() +
+  scale_x_log10() +
+  labs(
+    title = expression(paste("P-valores del test de boootstrap para ", H[0] : mu==mu[0])),
+    subtitle = paste0("nboot=", nboot,", p=", p,", k=", k)) +
+  xlab(expression(mu[0])) +
+  ylab("P-valor")
+```
 
-#   rango_dist = c(0.3, 1, 3, 10, 30)
-# )) %>%
-#   mutate(
-#     Xnorm = rmvnorm(nmuestral, sigma = Sigma1)
-#   )
-# resboot <- tibble(
-#   norm_est = replicate(nsims, rmvnorm(nmuestral, sigma = diag(p)), simplify=F),
-#   norm_noest = replicate(nsims, rmvnorm(nmuestral, sigma = Sigma1), simplify=F),
-#   t_est = replicate(nsims, rmvt(nmuestral, sigma = diag(p), k), simplify = F),
-#   t_noest = replicate(nsims, rmvt(nmuestral, sigma = Sigma1, k), simplify = F)
-# ) %>%
-#   gather("tipo", "muestra") %>%
-#   transmute(
-#     tipo,
-#     boot_call = map(muestra, bootstrap_test, nboot=nboot),
-#     p_valor = map_dbl(boot_call, "p_valor"))
-# 
-# resboot %>%
-#   group_by(tipo) %>%
-#   summarise(
-#     media = mean(p_valor),
-#     varianza = var(p_valor))
-#   )
-# resboot %>%
-#   ggplot(aes(p_valor, color = factor(tipo))) +
-#   geom_density()
+El test se porta como uno esperaría, con una probabilidad de rechazo que disminuye a medida que nos alejamos de la verdadera posición central $\mu=\vec{0}$. Resulta interesante notar que la parametrización del test bootstrap con la t multivariada no aporta precisión extra, a costa de agregar un parámetro extra. Luego, parece razonable concluir que de desconocer $k$, podemos usar un bootstrap con parametrización normal sin mayores inconvenientes.
