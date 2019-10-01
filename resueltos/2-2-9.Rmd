@@ -1,7 +1,7 @@
 ---
-title: "Taller de Consultoria - TP3"
+title: "Análisis Multivariado - Práctica 2, Pt. 2, Ej. 9"
 author: "Gonzalo Barrera Borla"
-date: "23/09/2019"
+date: "01/10/2019"
 output:
   pdf_document: default
 urlcolor: blue
@@ -200,10 +200,7 @@ bootstrap_test <- function(
   
   return(list(
     # repito parametros usados
-    nboot = nboot,
-    mu0 = mu0,
-    familia = familia,
-    ...,
+    nboot = nboot, mu0 = mu0, familia = familia, ...,
     S = S,
     x_ = apply(X, 2, mean),
     # estadistico original
