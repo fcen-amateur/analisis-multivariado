@@ -1,45 +1,41 @@
-library(mvtnorm)
-library(tidyverse)
-### 2-2-7: Implementaciones propias de la T_{p, k} "central"  y "no-central"
-rmvt_ <- function(n, k, mu=rep(0, nrow(Sigma)), Sigma=diag(length(mu))) {
-  p <- length(mu)
-  C <- chol(Sigma) # devuelve la triangular SUPERIOR : C'C=Sigma
-  v <- k/rchisq(n, df = k)
-  Z <- rmvnorm(n, mean = rep(0, p), sigma = diag(p))
-  return(rep(1, n)%*%t(mu) # matrix de n*p con todas las filas = mu
-         + sqrt(v) * Z %*% C) # multiplica c/fila de Z por c/ elemento de sqrt(v)
-}
+---
+title: "Taller de Consultoria - TP3"
+author: "Gonzalo Barrera Borla"
+date: "23/09/2019"
+output:
+  pdf_document: default
+urlcolor: blue
+---
 
-rmvt_2 <- function(n, k, mu=rep(0, nrow(Sigma)), Sigma=diag(length(mu))) {
-  v <- k/rchisq(n, df = k)
-  Z <- rmvnorm(n, sigma = Sigma)
-  return(rep(1, n)%*%t(mu)
-         + Z * sqrt(v)) # multiplica c/fila de Z por c/ elemento de sqrt(v)
-}
-# rep(1, n)%*%t(vector) + matriz == sweep(matriz, 2, vector, "+")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(tinytex.verbose = TRUE)
+```
 
-#### Comparacion de métodos
-ntest <- 100000
-Sigma <- rbind(
-  c(5, 0, 2),
-  c(0, 5, 1),
-  c(2, 1, 2))
-mu <- c(-1, 2, -3)
-k <- 5
+# Librerias
+```{r}
+library(mvtnorm) # Distribuciones multivariadas
+library(tidyverse) # manipulación de datos en general, graficos
+```
 
-ts <- list(
-  "KShirsagar" = rmvt(n=ntest, sigma=Sigma, df=k, delta=mu, type="Kshirsagar"),
-  "shifted" = rmvt(n=ntest, sigma=Sigma, df=k, delta=mu, type="shifted"),
-  "propia_chol" = rmvt_(n=ntest, k=k, mu=mu, Sigma=Sigma),
-  "propia_directa" = rmvt_2(n=ntest, k=k, mu=mu, Sigma=Sigma)
-)
+# 2-2-9: Test de Hotelling para muestras T-multivariadas 
 
-map(ts, cov)
-map(ts, ~apply(.,2, mean))
+Se quiere ahora testear $H_{0} : \mu=\mu_{0}$ con $\mu_{0}=\mathbf{0}$ cuando $\mathbf{x}_{i} \sim \mathcal{T}_{p, k}(\mu, \Sigma)$ usando el
+estadístico
+$$
+T=n\left(\overline{\mathbf{x}}-\mu_{0}\right)^{\mathrm{T}} \mathbf{S}^{-1}\left(\overline{\mathbf{x}}-\mu_{0}\right)
+$$
 
-## 2-2-9: Test de Hotelling para muestras T-multivariadas
+a. Hacer una simulación para decidir qué resultado obtendría si se usara el percentil de T como si las observaciones fueran normales. Use $k = 1, 2, 4, 10$, $p = 2, 4$ y $n = 20$.
+b. Armar un mecanismo bootstrap para testear $H_0$ en este caso.
 
-# Las funciones `ayudante_` están preparadas para usar `mapX` concisamente
+## A: Simulación
+
+Sabemos que cuando $\mathbf{x}_{i} \sim \mathcal{N}_{p}(\mu, \Sigma) \Rightarrow \: \tfrac{n-p}{p(n-1)} T^2\sim \mathcal{F}_{p, n-p}\left(\lambda^{2}\right)$, y por ende podemos calcular el p-valor correspondiente al $T^2_{obs}, \: p_i$ en cada simulación. Consideraremos que el test que realizamos está _bien calibrado_, si $\hat{\alpha} \rightarrow \alpha$, donde $\hat{\alpha} = \#\{p_i < \alpha \: \forall \: i = 1, ..., \text{nsims}\}$.
+
+Para cada una de las combinaciones sugeridas y algunas mas, realizamos `nsims` simulaciones con una familia t-multivariada, y otras `nsims` con una familia Normal. Si todo está bien programado, para la familia $\mathcal{N}_p, \: \hat{\alpha} \rightarrow \alpha$, y nos servirá de testigo para contrastar los resultados de la familia $\mathcal{T}_{p,k}$.
+
+```{r}
 ayudante_muestra_normal <- function(n, p, mu=rep(0, p), Sigma=diag(p)) {
   rmvnorm(n, mu, Sigma)
 }
@@ -60,79 +56,160 @@ ayudante_MD_muestral <- function(X, mu0=rep(0,ncol(X))) {
   distancia_mahalanobis(x_, mu0, S)
 }
 
-TIPO_COLS <- cols(
-  k = col_integer(),
-  p = col_integer(),
-  n = col_integer(),
-  tipo = col_character(),
-  q = col_integer(),
-  rechazos = col_integer()
-)
-simular <- function(rango_k, rango_n, rango_p, alfa, nsims=NULL, nbatch=500,
-                      archivo='out.csv') {
-  sims_ <- 0
-  done <- FALSE
+simular <- function(
+  rango_k, # conjunto de GL de T_{p,k} a probar
+  rango_p, # conjunto de imensiones posibles de T_{p,k} a probar
+  rango_nsamp, # conjunto de tamanios muestrales a probar 
+  alfa,    # nivel de significacion del test de Hotelling
+  nsims=NULL, # numero de simulaciones a realizar. NULL hace infinitas sims
+  nbatch=min(nsims, 500), # cada cuantas simulaciones guardo los resultados?
+  memoria='out.csv' # archivo temporal para guardar los resultados
+  ) {
   
-  unir_resultados <- function(nuevo) {
-    actual <- if (file.exists(archivo)) {
-      read_csv(archivo, col_types=TIPO_COLS)
+  # Funcion auxiliar para acumular los resultados parcales de cada batch
+  unir_resultados <- function(nuevo, memoria) {
+    TIPO_COLS <- cols(
+      k = col_integer(),
+      p = col_integer(),
+      n = col_integer(),
+      familia = col_character(),
+      q = col_integer(),
+      rechazos = col_integer()
+    )
+    actual <- if (file.exists(memoria)) {
+      read_csv(memoria, col_types=TIPO_COLS)
     } else { NULL }
-    bind_rows(actual, nuevo) %>%
-      group_by(k, p, n, tipo) %>%
-      summarise_at(c("q", "rechazos"), sum) %>%
-      write_csv(archivo)
+    
+    nuevo <- bind_rows(actual, nuevo) %>%
+      group_by(k, p, n, familia) %>%
+      summarise_at(c("q", "rechazos"), sum)
+    
+    write_csv(nuevo, memoria)
+    return(nuevo)
   }
   
+  sims_ <- 0 # simulaciones total hasta ahora
+  done <- FALSE # termine?
   while (!done) {
-    print(paste("Simulaciones totales:", sims_))
-    cross_df(list(
+    message(paste("Simulaciones totales:", sims_))
+    nuevo <- cross_df(list(
       k = rango_k,
       p = rango_p,
-      n = rango_n,
+      n = rango_nsamp,
       nsim = seq.int(nbatch))) %>%
       mutate(
-        Xmvt = pmap(list(n, p, k), ayudante_muestra_t),
-        Xmvnorm = map2(n, p, ayudante_muestra_normal)) %>%
-      gather("tipo", "muestra", -k, -n, -p, -nsim) %>%
+        student = pmap(list(n, p, k), ayudante_muestra_t),
+        normal = map2(n, p, ayudante_muestra_normal)) %>%
+      gather("familia", "muestra", -k, -n, -p, -nsim) %>%
       mutate(
         md = map_dbl(muestra, ayudante_MD_muestral),
         Fobs = (n-p)*n/(p*(n-1))*md,
         p_valor = pf(Fobs, df1 = p, df2 = (n-p))) %>%
-      group_by(k, p, n, tipo) %>%
+      group_by(k, p, n, familia) %>%
       summarise(
         q = n(),
-        rechazos = sum(p_valor < alfa)) %>%
-      unir_resultados()
+        rechazos = sum(p_valor < alfa))
     
+    res <- unir_resultados(nuevo, memoria)
     sims_ <- sims_ + nbatch
-    if (!is.null(nsims) && (sims_ > nsims)) { done <- TRUE }
+    if (!is.null(nsims) && (sims_ >= nsims)) { done <- TRUE }
   }
+  return(res)
 }
+```
 
-bootstrap_test <- function(X, mu0=rep(0, ncol(X)), nboot=1000) {
-  # X: matriz muestral (n*p), con 1 obs/fila
-  # mu0: define H_0: mu=mu0
-  # No conozco la distrib de las x_i, asumo que son normales
-  # para el bootstrap
-  MD <- ayudante_MD_muestral(X, mu0)
-  nmuestral <- nrow(X)
-  x_ <- apply(X, 2, mean)
+Definimos los parámetros casi tal cual los pide el ejercicio, realizamos la simulación y graficamos los resultados:
+
+```{r cache=T, message=F}
+rango_k <- c(1, 2, 4, 10, 25)
+rango_p <- c(2, 4, 10)
+rango_nsamp <- 20
+alfa <- 0.1
+nsims <- 100
+resumen <- simular(rango_k, rango_p, rango_nsamp, alfa, nsims)
+```
+
+```{r, echo=F}
+resumen %>%
+  mutate(alfa_emp = rechazos/q) %>%
+  ggplot(aes(factor(k), alfa_emp, group = familia, color=familia)) +
+  geom_point() +
+  geom_line() + 
+  geom_hline(yintercept = alfa, alpha=0.3) +
+  facet_grid(n ~ p, labeller = label_both) +
+  labs(
+    title = expression(paste(hat(alpha)," para distintas combinaciones de parámetros")),
+    subtitle = paste(nsims, "simulaciones, alfa =", alfa)) +
+  ylab(expression(hat(alpha))) +
+  xlab("k")
+```
+
+Se observa que el test está bien calibrado (id est, $\hat{\alpha}_n \approx \alpha = `r alfa`$) para la normal multivariada, pero para distribuciones t-multivariadas con pocos grados de libertad $\hat{\alpha}_n << \alpha$, con  $\hat{\alpha}_n \stackrel{k \rightarrow \infty}{\longrightarrow} \alpha$. Esto es razonable, ya que del Ejercicio 2-2-7 sabemos que si 
+$$
+\mathbf{x} \sim \mathcal{T}_{p, k}(\mu, \Sigma) \Rightarrow \mathrm{Cov} (\mathbf{x}) = \mathbf{E}(v)\cdot\Sigma = \begin{cases}
+ + \infty  &\text{si } k \leq 2\\
+\tfrac{k}{k-2}\Sigma &\text{si } k > 2
+\end{cases}
+$$
+
+Es decir, la matrix de covarianza "explota" cuando $k \rightarrow 2$, y todo intervalo de confianza para $\mu$ será tan ancho que aún siendo cierta  nunca rechazamos la hipótesis nula  $H_{0} : \mu=\mu_{0}$.
+
+## B: Bootstrap Paramétrico
+
+```{r}
+bootstrap_test <- function(
+  X, # matriz muestral (n*p), con 1 obs/fila
+  mu0=rep(0, ncol(X)), # mu0: define H_0: mu=mu0. Igual a 0 por defecto
+  familia = "normal", # familia paramétrica a usar. Una de c("n[ormal]", "t")
+  nboot=1000, # Cantidad de muestrar a generar
+  ... # Parametros extra. Si familia=="t", debe incluir los `k` GL
+  ) {
+  extra_kwargs <- names(list(...))
+  nsamp <- nrow(X)
   S <- cov(X)
   # No hace falta guardar el estadistico exacto, solo lo que cambia,
   # es decir, la distancia de Mahalanobis al cuadrado
+  
+  
+  muestra_H0 <- function(familia, mu0, S, ...) {
+    # Bajo H0, las observaciones tienen media mu0 y S estima su covarianza
+    if (familia %in% c("normal", "n")) {
+      # uso bootstrap parametrico normal multivariado para generar una muestra
+      rmvnorm(nsamp, sigma = S, mean = mu0)
+    } else if (familia == "t") {
+      if (!"k" %in% extra_kwargs) { 
+        stop("La familia t requiere un parametro `k` con sus GL")}
+      # uso t multivariada con k grados de libertad 
+      rmvt(nsamp, S,  delta = mu0, df = k, type = "shifted")
+    } else {
+      stop("No reconozco esa familia de distribuciones")
+    }
+  }
+  
+  # Calculo lo unico que varía entre T^2 y los T^2_{boot}: el cuadrado de la
+  # dist. Mahalanobis de la media muestral x_ a mu0
+  MD <- ayudante_MD_muestral(X, mu0)
   MDboot <- vector("numeric", nboot)
   for (i in seq.int(nboot)) {
-    # Bajo H0, las observaciones tienen media mu0
-    Xboot <- rmvnorm(nmuestral, mean=mu0, sigma=S)
+    Xboot <- muestra_H0(familia, mu0, S, ...)
     MDboot[i] <- ayudante_MD_muestral(Xboot, mu0)
   }
+  
   return(list(
-    x_ = x_,
+    # repito parametros usados
+    nboot = nboot,
+    mu0 = mu0,
+    familia = familia,
+    ...,
     S = S,
-    MD = MD,
-    #MDboot = MDboot,
+    x_ = x_,
+    # estadistico original
+    T.sq = nsamp * MD,
+    # Estimo el p-valor como la tasa de Tboot's mayores al T observado
     p_valor = sum(MDboot > MD)/(nboot+1)))
 }
+```
+
 
 
 mz_sim_aleatoria <- function(d) {
@@ -142,7 +219,7 @@ mz_sim_aleatoria <- function(d) {
 mz_sim_aleatoria(3)
 nsims <- 1
 nboot <- 100
-nmuestral <- 30
+nsamp <- 30
 k <- 3
 p <- 3
 #Sigmaboot <- diag(p)
@@ -154,8 +231,8 @@ alejar <- function(dim, long) {
 
 list(
   muestras = list(
-    normal = rmvnorm(nmuestral, sigma = Sigma1),
-    student = rmvt(nmuestral, sigma = Sigma1, type = "shifted")
+    normal = rmvnorm(nsamp, sigma = Sigma1),
+    student = rmvt(nsamp, sigma = Sigma1, type = "shifted")
   ),
   
 muestras <- tibble(
