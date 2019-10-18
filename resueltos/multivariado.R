@@ -12,38 +12,56 @@ ellipse_grid <- function(rango_x1, rango_x2, A, b) {
   return(z)
 }
 
-# Test de hotelling univariado
-hotelling.test <- function(X, C = diag(dim(X)[2]), mu0 = rep(0, dim(C)[1]),
-                           int.conf = NULL, int.A = C, int.alfa = 0.05) {
-  n <- dim(X)[1]
-  p <- dim(C)[1]
+hotelling.test <- function(
+  # X: muestra x_i de n VA IID Normal(mu, Sigma)
+  # C, mu0: definen la hipotesis nula a testear, H_0 : C %*% mu = mu0
+  # int.conf: Cuando no es NULL, genera IC de forma a'x_ +- k * sqrt(a'Sa/n)
+  #   para cada  fila `a` de la matriz de CLs A, con prob conjunta 1 - int.alfa
+  #   `k` es funcion de alfa y el tipo de IC, según Seber[84] pp. 81-83
+  X, C = diag(dim(X)[2]), mu0 = rep(0, dim(C)[1]),
+  int.conf = c(NA, "bonferroni", "scheffe"), int.A = C, int.alfa = 0.05) {
+
+  # Calculo las VA necesarias para el test de Hotelling: y, W
+
+  n <- dim(X)[1] # Tamaño muestral
+  p <- dim(C)[1] # C. lineales de mu a testear
   X <- as.matrix(X)
+  # "x raya" ~ N(mu, Sigma/n), promedio observaciones (est. insesgado de mu)
   x_ <- colMeans(X)
+  # S es est. insesgado de Sigma
   S <- cov(X)
+
+  # y ~ N(0, (C' Sigma C)/n) 
+  # W = cov(Y) = C %*% cov(X) %*% t(C) ~ Wishart(Sigma, n-1, p)
+  # (y, W) independientes
   y <- C %*% x_ - mu0
   W <- C %*% S %*% t(C)
-  T0 <- n * as.numeric(t(y) %*% solve(W) %*% y)
-  T0f <- T0 * (n-p) / ((n-1) * p)
-  pval <- 1 - pf(T0f, p, n-1)
-  
+
+  # "T0 cuadrado" ~ Hotelling(p, n-1) 
+  T0sq <- n * as.numeric(t(y) %*% solve(W) %*% y) 
+  # F0 ~ F(p, n - p)
+  F0 <- T0sq * (n-p) / ((n-1) * p)
+  pval <- 1 - pf(F0, p, n - p)
+
   retval <- list(
-    statistic = T0,
+    statistic = T0sq,
     p.value = pval,
-    fstat = T0f,
+    fstat = F0,
     d = p,
     m = n - 1
   )
-  
-  if (!is.null(int.conf)) {
+
+  int.conf <- match.arg(int.conf)
+  if (!is.na(int.conf)) {
     A <- int.A
     q <- qr(A)$rank # cant. ICs LI
     r <- dim(A)[1] # cant. ICs total
-    
+
     if (int.conf=="bonferroni") {
       k <- qt(1 - int.alfa/(2*r), n - 1)
     } else if (int.conf=="scheffe") {
       k <- sqrt(q * (n - 1)/(n - q) *qf(1 - int.alfa, q, n - q))
-    } else { stop("Tipo IC no reconocido") }
+    }
     ICs <- matrix(nrow = r, ncol = 2)
     for (i in seq.int(r)) {
       sigma_ax <- sqrt( as.numeric(t(A[i,]) %*% S %*% A[i,]) / n )
