@@ -1,0 +1,221 @@
+---
+title: "Practica 2.2"
+author: "Gonzalo Barrera Borla"
+date: "10/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(RobStatTM)
+library(mvShapiroTest)
+library(mvtnorm)
+library(glue)
+source("../resueltos/multivariado.R")
+```
+
+# Ejercicio 1
+
+```{r}
+# a. QQplots de las marginales y scatterplots de a pares
+df221 <- read_csv("../datos/2-2-1.csv", col_types = cols(.default = col_integer()))
+```
+
+
+```{r}
+for (v in names(df221)) {
+  qqnorm(df221[[v]], main = v)
+  qqline(df221[[v]])
+}
+```
+
+Sociales y Ciencia parecen normales, Lengua no.
+
+```{r}
+plot(df221)
+```
+
+```{r}
+mvShapiro.Test(as.matrix(df221))
+for (v in names(df221)) {
+  print(v)
+  print(shapiro.test(df221[[v]]))
+}
+```
+
+Efectivamernte, sociales y ciencia no rechazan, lengua si, conjuntamente no rechaza
+
+```{r}
+nivel <- 0.95
+# Recordar que estos parametros on el centro y la distancia a cada lado
+for (tipo in c("bonferroni", "scheffe")) {
+  print(tipo)
+  h.test <- hotelling.test(df221, int.conf = tipo, int.alfa = 1 - nivel)
+  print(h.test$intervals)
+}
+
+```
+
+Misma locacion, en ambos. Como q = r, los de bonferron son mas ajustados.
+
+Hallar las direcciones principales y las longitudes de los ejes del elipsoide de con-
+fianza de nivel 0.95.
+
+An arbitrarily oriented ellipsoid, centered at $v$, is defined by the solutions $x$ to the equation $(\mathbf{x-v})^\mathrm{T}\! A\, (\mathbf{x-v}) = 1$
+where $A$ is a positive definite matrix and $x,\:v$ are euclidean vectors.
+
+The eigenvectors of A define the principal axes of the ellipsoid and the eigenvaluess of A are the reciprocals of the squares of the semi-axes: $a^{-2}, b^{-2},c^{-2}$.
+
+El elipsoide de confianza tiene entonces
+- centro en $\overline{x}$,
+- ejes principales en los autovectores de $S^{-1}$, $t_1, ..., t_p$,
+- de longitud $\sqrt{\frac{k}{\lambda_i}}$, donde
+  - $\lambda_i$ es el autovalor asociado a $t_i$, y
+  - $k = \frac{p(n-1)}{n(n-p)}f_{p, n-p}^{\alpha}$
+```{r}
+n <- dim(df221)[1]
+p <- dim(df221)[2]
+S <- cov(df221)
+auto <- eigen(solve(S))
+# centro
+v <- colMeans(df221)
+# direcciones principales
+ejes_ppales <- auto$vectors
+# longitudes
+k <- p*(n-1)/(n*(n-p)) * qf(nivel, p, n-p)
+L <- auto$values
+longs <- sqrt(k / L)
+```
+
+```{r}
+mu0 <- c(500, 50, 30)
+colMeans(df221)
+hotelling.test(df221, mu0 = mu0)
+# recontra rechazo conjuntamente
+# es que todas las direcciones rechazan porque n es batante grande
+for (i in seq.int(p)) {
+  print(t.test(df221[[i]], mu = mu0[i]))
+  e_i <- matrix(as.integer(seq.int(p) == i), nrow = 1)
+  print(hotelling.test(
+    df221, C = e_i, mu0 = mu0[i]))
+}
+```
+
+Para el punto f, hay que encontrar la transformacion lineal que nos permite testear la hpotesis nula de forma $C\mu = 0$
+```{r}
+colMeans(df221)
+C <- rbind(
+  c(1, -10, 0),
+  c(0, -1/2, 1))
+hotelling.test(df221, C)
+Cbis <- rbind(
+  c(1, -9.6, 0),
+  c(0, -1/2.2, 1))
+hotelling.test(df221, Cbis)
+```
+
+Rechazo a nivel 0.002 o menor. Si modifico la dirección del subespacio $\mathcal{V}$ ligeramente para que "matchee" la proporción entre las medias muestrales, no rechazo.
+
+```{r}
+# Divido a cada columna por el elemento de mu0 cpte
+Y <- sweep(df221, 2, mu0, "/")
+# Testeo igual de medias sobre las variables transformadas
+Ceq <- rbind(
+  c(1, -1, 0),
+  c(0, 1, -1))
+hotelling.test(Y, Ceq, int.conf = "bonferroni", int.alfa = 0.05)
+```
+
+Rechazo que hayan aumentado en la misma proporcion las 3, pero por culpa de la segunda desigualdad, las notas de sociales y lengua sí parecen haber aumentado en la misma proporción.
+
+## Ejercicio 6
+
+Un ajuste lineal parece razonable
+```{r}
+df226 <- read_csv("../datos/2-2-6.csv")
+df226long <- df226  %>%
+  rowid_to_column("id") %>%
+  gather("t", "x", -id) %>%
+  mutate(
+    t = as.double(str_remove(t, "man")),
+    id = as_factor(id))
+
+df226long %>%
+#  group_by(t) %>%
+#  summarise_at("x", mean) %>%
+  ggplot(aes(t, x, group = id)) +
+  geom_line()
+
+lm(x ~ t, df226long) %>% summary()
+lm(x ~ id + t, df226long) %>% summary()
+```
+
+# Ejercicio 9
+
+RE: 2-2-9.Rmd y 2-2-9.pdf
+
+# Ejercicio 10
+
+```{r}
+df2210 <- read_csv("../datos/2-2-10.csv")
+data <- as.matrix(df2210)
+mvShapiro.Test(data)
+```
+
+No podemos aceptar la normalidad de los datos. Si dibujamos un elipsoide de confianza al 95% basándonos en estiamdores robustos de locación y escala, vemos que las observaciones 2, 5 y 12 están muy por fuera del mismo.
+
+```{r}
+rango_x1 <- seq(-4, 2,0.1)
+rango_x2 <- seq(-4, 3.5, 0.1)
+covR <- covRob(data)
+z0 <- ellipse_grid(
+  rango_x1,
+  rango_x2,
+  A = solve(covR$cov),
+  b = covR$center)
+
+plot(data, type = "n")
+text(data[,1], data[,2], labels = seq.int(dim(data)[1]))
+contour(
+  rango_x1,
+  rango_x2,
+  z0,
+  levels = qchisq(0.95, 2),
+  add = TRUE)
+```
+
+
+```{r}
+plot(covR$dist)
+```
+
+Las excluimos y repetimos los diagnósticos:
+```{r}
+to.keep <- covR$dist < qchisq(0.95, 2)
+mvShapiro.Test(data[to.keep,])
+```
+
+Sin las observaciones sospechosas, un test de normalidad multivariada pasa como jugo de uva. Así y todo, vemos que e elipsoide de confianza 0.95 deja a fuera una nueva observación. No nos parece razonable quitarla, ya que es mucho menos extrema que las anteriores.
+
+```{r}
+rango_x1 <- seq(-4, 2,0.1)
+rango_x2 <- seq(-4, 3.5, 0.1)
+covR <- covRob(data[to.keep,])
+z0 <- ellipse_grid(
+  rango_x1,
+  rango_x2,
+  A = solve(covR$cov),
+  b = covR$center)
+
+plot(data[to.keep,], type = "n")
+text(data[to.keep,][,1], data[to.keep,][,2], labels = seq.int(dim(data[to.keep,])[1]))
+contour(
+  rango_x1,
+  rango_x2,
+  z0,
+  levels = qchisq(0.95, 2),
+  add = TRUE)
+```
+
+Y ahora testeamos con un Hotelling habitual. Alternativamente, podríamos haber usado un test bootstrap sin asumir normalidad de los datos.
+
