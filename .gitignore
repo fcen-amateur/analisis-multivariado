@@ -2,3 +2,6 @@ bib/
 .RData
 .Rhistory
 *.log
+# Rmd cache
+*cache*
+*files*
