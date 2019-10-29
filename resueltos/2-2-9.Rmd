@@ -38,7 +38,7 @@ Además de simular los valores del estadístico $T^2$ cuando la muestra es $\mat
 
 Comenzamos seteamos los parámetros de la simulación
 ```{r}
-nsims <- 10000
+nsims <- 1000
 rango_k <- c(1, 2, 4, 10, NA)
 rango_p <- c(2, 4)
 rango_n <- c(20)
@@ -58,7 +58,7 @@ Y ahora generamos `nsims` muestras para cada tupla de parámetros, y guardamos l
 
 \newpage
 
-```{r, cache = T}
+```{r}
 i <- 1 # Índice de fila para los resultados
 for (p in rango_p) {
   for (n in rango_n) {
@@ -130,11 +130,10 @@ Por la distribución poco uniforme de los p-valores para valores bajos de $k$, e
 
 ## B: Bootstrap Paramétrico
 
-El proceso de bootstrap será el siguiente:
+Dada una muestra aleatoria observada $X_0$ donde las observaciones tienen distribución $\mathcal{T}_{p,k}(\mu,\Sigma)$, y una hipótesis nula a testear $H_0: \mu = \mu_0$ con $\Sigma$ desconocida, el proceso de bootstrap será el siguiente:
 
-1. Fijamos la semilla, y generamos una muestra de tamaño $n$ de VA $\mathbf{x}_i \sim \mathcal{T}_{p,k}(\mu=0,\Sigma=\mathbf{I}_p)$.
-2. Suponiendo que queremos testear $H_0: \mu = \mu_0$ con $\Sigma$ desconocida utilizaremos el estimador insesgado de $\Sigma$, $\mathbf{S}$, y generaremos $n_{boot}$ muestras de tamaño $n$ de una $\mathcal{T}_{p,k}(\mu=\mu_0,\Sigma=\mathbf{S})$.
-3. Computamos el estadístico $T_0^2$ para la muestra original y los $n_{boot}$ estadísticos $T^2_{boot,i}$ sobre las muestras sintéticas, y el p-valor asociado al test sobre la muestra original, será
+1. Fijamos la semilla, y generamos $n_{boot}$ muestras de tamaño $n$ de una $\mathcal{T}_{p,k}(\mu_0,I_p)$ (como $T^2$ es invariante bajo transformaciones no-singulares de las observaciones, suponer que la matriz de covarianza es $I_p$ no quita generalidad).
+2. Computamos el estadístico $T_0^2$ para la muestra original y los $n_{boot}$ estadísticos $T^2_{boot,i}$ sobre las muestras sintéticas, y el p-valor asociado al test sobre la muestra original, será
 $$
 \text{p-valor}_{boot} = \frac{\#\{i:\:T^2_{boot,i} > T^2_0\}}{n_{boot}+1}
 $$
@@ -142,15 +141,17 @@ $$
 \newpage
 
 ```{r}
-bootstrap.test <- function(n, p, k, mu0 = rep(0, p), nboot=1000) {
-  # X0: matriz muestral (n*p), de VAIID T multivariadas (0, I_p) con k GL
-  X0 <- rmvt(n, sigma = diag(p), df = k)
+bootstrap.test <- function(X0, k, mu0 = rep(0, dim(X0)[2]), nboot=1000) {
+  # X0: matriz muestral (n*p), de VAIID T multivariadas con k GL
+  n <- dim(X0)[1]
+  p <- dim(X0)[2]
   x_0 <- colMeans(X0)
   S0 <- cov(X0)
   T0 <- as.numeric(n * t(x_0 - mu0) %*% solve(S0) %*% (x_0 - mu0))
   Tboot <- vector("numeric", nboot)
   for (i in seq.int(nboot)) {
-    # Bajo H0, las observaciones tienen media mu0 y varianza estimada S
+    set.seed(i)
+    # Bajo H0, las observaciones tienen media mu0
     X <- rmvt(n, delta = mu0, sigma = diag(p))
     x_ <- colMeans(X)
     S <- cov(X)
@@ -161,14 +162,15 @@ bootstrap.test <- function(n, p, k, mu0 = rep(0, p), nboot=1000) {
 }
 ```
 
-Si el proceso se comporta como uno espera, deberíamos obtener p-valores cercanos a 1 cuando $\mu_0=0$, y tender a cero a medida que $\|\mu_0\|$ crece. Fijamos $n=20,p=2,k=3$ y consideramos la serie de $\mu_{0,i}=c_i \times1_p, c_i=\{0, 0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 1\}$:
+Para probar esta función, generaremos una muestra $X_0\sim \mathcal{T}_{2,5}(0,I_2)$ de $n=100$ observaciones, y a partir de ella testearemos distintas hipótesis nulas $H_{0i}:\mu=\mu_{0i}$. Si el proceso se comporta como uno espera, deberíamos obtener p-valores cercanos a 1 cuando $\mu_{0i}=0$, y tender a cero a medida que $\|\mu_{0i}-\mu\|$ crece. En otras palabras, esperamos que la potencia del test para distinguir alternativas crezca a medida que éstas se alejan del verdadero valor. Consideraremos en particular la serie de $\mu_{0i}=c_i \times1_p : c_i=\{0, 0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 1\}$:
 
-```{r, cache = T}
+```{r}
+set.seed(3)
+X0 <- rmvt(n = 100, sigma = diag(2), df = 5, delta = rep(0, 2))
 rango_c <- c(0, 0.001, 0.01, 0.05, 0.1, 0.25, 0.5, 1)
 pval <- vector("numeric", length(rango_c))
 for (i in seq_along(rango_c)) {
-  set.seed(42)
-  pval[i] <- bootstrap.test(n = 20, p = 2, k = 3, mu0 = rep(rango_c[i], 2)) }
+  pval[i] <- bootstrap.test(X0, k = 5, mu0 = rep(rango_c[i], 2)) }
 ```
 
 
@@ -177,9 +179,9 @@ tibble(c = rango_c, pv = pval) %>%
   ggplot(aes(c, pv)) +
   geom_point() +
   geom_line(linetype = "dashed") +
-  labs(title = "P-valores para el procedimiento bootstrap y distintas hipótesis nulas",
+  labs(title = expression(paste("P-valores de bootstrap para una misma muestra ", X[0], " y distintas ", H[0])),
        x = expression(paste("'c' en ", H[0] : mu, " = ", mu[0], " = (c, ..., c)'")),
        y = expression(pval[boot]))
 ```
 
-El test se comporta como uno esperaría, con una probabilidad de rechazo que aumenta (p-valor que disminuye) a medida que nos alejamos de la verdadera distribución $\mu=0$.
+El test se comporta como uno esperaría, con una potencia creciente (p-valor que disminuye) a medida que nos alejamos del verdadero parámetro $\mu=0$. Vale aclarar que el máximo p-valor no se alcanza cuando $\mu_0=\mu=0$, sino cuando $\mu_0=\overline{x}$, que en nuestra muestra particular, es `r signif(colMeans(X0), 2)`.
