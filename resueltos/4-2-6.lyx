@@ -1,0 +1,458 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\begin_modules
+sweave
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 2
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Práctica 4
+\end_layout
+
+\begin_layout Author
+Gonzalo Barrera Borla
+\end_layout
+
+\begin_layout Date
+28/10/2019
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\x}{\mathrm{x}}
+{\mathrm{x}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\t}{\mathsf{T}}
+{\mathsf{T}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\tt}{\mathrm{t}}
+{\mathrm{t}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Parte 2
+\end_layout
+
+\begin_layout Subsection*
+Ejercicio 6
+\end_layout
+
+\begin_layout Quote
+Sea 
+\begin_inset Formula $\x$
+\end_inset
+
+ un vector aleatorio de dimensión 
+\begin_inset Formula $p$
+\end_inset
+
+ con media 0 y matriz de covarianza 
+\begin_inset Formula $\Sigma=\left(\sigma_{jk}\right)$
+\end_inset
+
+, donde todas las covarianzas 
+\begin_inset Formula $\sigma_{jk},\:j\neq k$
+\end_inset
+
+ son positivas.
+ Sea 
+\begin_inset Formula $\tt_{1}$
+\end_inset
+
+ un autovector de norma 1 correspondiente al mayor autovalor, mostrar que
+ todos sus coeficientes son o bien positivos o bien negativos.
+\end_layout
+
+\begin_layout Standard
+Por conveniencia, llamemos 
+\begin_inset Formula $\left[p\right]=\left\{ 1,2,\dots,p\right\} $
+\end_inset
+
+ al conjunto de enteros positivos desde 1 hasta 
+\begin_inset Formula $p$
+\end_inset
+
+.
+ Como 
+\begin_inset Formula $\sigma_{jj}=\text{Var}\left(\x_{j}\right)>0\:\forall\:j\in\left[p\right]\Rightarrow\sigma_{jk}>0\:\forall\:\left(j,k\right)\in\left[p\right]^{2}$
+\end_inset
+
+, y todos los elementos de 
+\begin_inset Formula $\Sigma$
+\end_inset
+
+ son estrictamente positivos.
+ Además, 
+\begin_inset Formula $\Sigma=\Sigma^{\t}$
+\end_inset
+
+(es simétrica) con mayor autovalor 
+\begin_inset Formula $\lambda$
+\end_inset
+
+, y por ende se cumple que (Seber 1977, A.7.2)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\max_{\x:\|\x\|=1}\x^{\t}\Sigma\x=\lambda
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+que se alcanza cuando 
+\begin_inset Formula $\x$
+\end_inset
+
+ es un autovector asociado a 
+\begin_inset Formula $\lambda$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Consideremos un vector 
+\begin_inset Formula $\gamma\in\mathbb{R}^{p}:\gamma_{j}=\left|\tt_{1j}\right|\forall\:j\in\left[p\right],$
+\end_inset
+
+ con cada componente igual al valor absoluto del respectivo componente en
+ 
+\begin_inset Formula $\tt_{1}$
+\end_inset
+
+.
+ Nótese que 
+\begin_inset Formula $\|\gamma\|=\|\tt_{1}\|=1.$
+\end_inset
+
+ Por un lado,
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+0\leq\gamma^{\t}\Sigma\gamma\leq\tt_{1}^{\t}\Sigma\tt_{1}=\max_{\x:\|x\|=1}\x^{\t}\Sigma\x=\lambda
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+y por otro, usando que (a) 
+\begin_inset Formula $\sum_{i}\left|x_{i}\right|\geq\left|\sum_{i}x_{i}\right|$
+\end_inset
+
+ y (b) si 
+\begin_inset Formula $x>0\Rightarrow\left|x\right|=x$
+\end_inset
+
+ , tenemos que
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\gamma^{\t}\Sigma\gamma & =\sum_{\left(i,j\right)\in\left[p\right]^{2}}\gamma_{i}\gamma_{j}\sigma_{ij}=\sum_{\left(i,j\right)\in\left[p\right]^{2}}\left|\tt_{1i}\right|\left|\tt_{1j}\right|\sigma_{ij}=\sum_{\left(i,j\right)\in\left[p\right]^{2}}\left|\tt_{1i}\cdot\tt_{1j}\cdot\sigma_{ij}\right|\\
+ & \geq\left|\sum_{\left(i,j\right)\in\left[p\right]^{2}}\tt_{1i}\cdot\tt_{1j}\cdot\sigma_{ij}\right|=\left|\tt_{1}^{\t}\Sigma\tt_{1}\right|=\tt_{1}^{\t}\Sigma\tt_{1}=\lambda
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Tenemos entonces que 
+\begin_inset Formula $\lambda\leq\gamma^{\t}\Sigma\gamma\leq\lambda$
+\end_inset
+
+, que sólo es posible si 
+\begin_inset Formula $\gamma^{\t}\Sigma\gamma=\lambda$
+\end_inset
+
+.
+ Luego, 
+\begin_inset Formula $\gamma^{\t}\Sigma\gamma=\max_{\x:\|x\|=1}\x^{\t}\Sigma\x$
+\end_inset
+
+ y por ende 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ (al igual que 
+\begin_inset Formula $\tt_{1}$
+\end_inset
+
+) es un autovector de norma 1 asociado al mayor autovector de 
+\begin_inset Formula $\Sigma$
+\end_inset
+
+, y podemos escribir 
+\begin_inset Formula $\Sigma\gamma=\lambda\gamma$
+\end_inset
+
+.
+ En particular, si 
+\begin_inset Formula $\exists j\in\left[p\right]:\gamma_{j}=0$
+\end_inset
+
+, entonces 
+\begin_inset Formula $0=\lambda\gamma_{j}=\left(\Sigma\gamma\right)_{j}=\sum_{l\in\left[p\right]}\sigma_{jl}\gamma_{l}$
+\end_inset
+
+, y como todo 
+\begin_inset Formula $\sigma_{jl}>0$
+\end_inset
+
+, esto sólo es posible si todo 
+\begin_inset Formula $\gamma_{l}=0$
+\end_inset
+
+ y por ende 
+\begin_inset Formula $\|\gamma\|=0$
+\end_inset
+
+, cuando ya establecimos que 
+\begin_inset Formula $\|\gamma\|=1$
+\end_inset
+
+.
+ Esto es un absurdo al que llegamos por suponer que algún componente de
+ 
+\begin_inset Formula $\gamma$
+\end_inset
+
+ era igual a 0.
+ Luego 
+\begin_inset Formula $\gamma_{l}>0\:\forall\:l\in\left[p\right]$
+\end_inset
+
+, y en consecuencia 
+\begin_inset Formula $\tt_{1l}\neq0\:\forall\:l\in\left[p\right]$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Consideremos ahora 
+\begin_inset Formula $\tt_{1j}$
+\end_inset
+
+, la j-ésima componente de 
+\begin_inset Formula $\tt_{1}$
+\end_inset
+
+, de modo que 
+\begin_inset Formula $\lambda\tt_{1j}=\sum_{l\in\left[p\right]}\sigma_{jl}\cdot\tt_{1l}$
+\end_inset
+
+, y supongamos que 
+\begin_inset Formula $\tt_{1j}<0$
+\end_inset
+
+ para cierto 
+\begin_inset Formula $j$
+\end_inset
+
+, de modo que 
+\begin_inset Formula $\tt_{1j}+\left|\tt_{1j}\right|=\tt_{1j}+\gamma_{j}=0.$
+\end_inset
+
+ Luego, 
+\begin_inset Formula $0=\lambda\left(\tt_{1j}+\gamma_{j}\right)=\sum_{l=1}^{p}\sigma_{jl}\left(\tt_{1l}+\left|\tt_{1l}\right|\right)$
+\end_inset
+
+, donde 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\tt_{1l}+\left|\tt_{1l}\right|=\begin{cases}
+0 & \quad\text{si\:}\tt_{1l}<0\\
+2\tt_{1l}>0 & \quad\text{si }\tt_{1l}>0
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+y como todo 
+\begin_inset Formula $\sigma_{jl}>0\Rightarrow\tt_{1l}<0\:\forall\:l\in\left[p\right]$
+\end_inset
+
+.
+ Un argumento análogo partiendo del supuesto de que 
+\begin_inset Formula $\tt_{1j}>0$
+\end_inset
+
+ para cierto 
+\begin_inset Formula $j$
+\end_inset
+
+ nos lleva a concluir que 
+\begin_inset Formula $\tt_{1l}>0\:\forall\:l\in\left[p\right]$
+\end_inset
+
+.
+ Finalmente, hemos probado que (i) ninguna componente de 
+\begin_inset Formula $\tt_{1}$
+\end_inset
+
+ puede ser nula, y (ii) todas las componentes de 
+\begin_inset Formula $\tt_{1}$
+\end_inset
+
+t tienen el mismo signo, lo cual concluye la demostración.
+\end_layout
+
+\begin_layout Subsection*
+Referencias
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset href
+LatexCommand href
+name "Teorema de Perron-Frobenius"
+target "https://en.wikipedia.org/wiki/Perron%E2%80%93Frobenius_theorem"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Ninio, F.
+ (1976).
+ 
+\emph on
+
+\begin_inset CommandInset href
+LatexCommand href
+name "A simple proof of the Perron-Frobenius theorem for positive symmetric matrices"
+target "http://www.uvm.edu/pdodds/files/papers/others/1976/ninio1976a.pdf"
+
+\end_inset
+
+
+\emph default
+,
+\emph on
+ 
+\emph default
+J.
+ Phys.
+ A: Math.
+ Gen..
+ Vol.
+ 9.
+ No.
+ 8, 1976.
+ 
+\end_layout
+
+\begin_layout Itemize
+Seber, G.
+ A.
+ F.
+ (1977).
+ Linear Regression Analysis.
+ Wiley: New York.
+\end_layout
+
+\end_body
+\end_document
